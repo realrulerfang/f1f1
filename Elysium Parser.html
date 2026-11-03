@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Elysium Parser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#02060f;--bg2:#06122a;--panel:#081a3a;--line:#123a78;--blue:#1e6bff;--cyan:#5ee1ff;--ice:#bfeeff;--text:#d6e6ff;--mute:#7f9ac4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+html{scroll-behavior:smooth;scroll-padding-top:70px;height:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:radial-gradient(900px 500px at 80% -10%,#0b2a66 0,transparent 60%),var(--bg);color:var(--text);font:16px/1.6 "JetBrains Mono",ui-monospace,monospace;min-height:100%}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(30,107,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(30,107,255,.07) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(#000,transparent 85%)}
+h1,h2,h3{font-family:"Chakra Petch",sans-serif;margin:0;letter-spacing:.01em}
+a{color:var(--cyan)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:18px;align-items:center;padding:12px 5vw;background:rgba(2,6,15,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+header b{font-family:"Chakra Petch";font-size:20px;color:var(--ice);margin-right:auto}
+header a{text-decoration:none;font-size:13px;color:var(--mute)}header a:hover{color:var(--cyan)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);margin-right:8px;animation:p 1.6s infinite}
+@keyframes p{50%{opacity:.25}}
+main{position:relative;max-width:1100px;margin:0 auto;padding:0 5vw 80px}
+.hero{padding:70px 0 40px}
+.hero h1{font-size:clamp(40px,8vw,84px);line-height:1;color:var(--ice);text-shadow:0 0 30px rgba(30,107,255,.7)}
+.hero p{max-width:60ch;color:var(--mute);margin:18px 0 28px}
+.cd{display:flex;gap:10px;flex-wrap:wrap}
+.cd div{min-width:84px;padding:12px 14px;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),var(--bg2));border-radius:6px;text-align:center}
+.cd strong{display:block;font:700 30px "Chakra Petch";color:var(--cyan)}.cd span{font-size:12px;color:var(--mute)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:34px 0}
+.stat{border-left:2px solid var(--blue);padding:4px 14px}.stat strong{font:700 26px "Chakra Petch";color:var(--ice);display:block}.stat span{font-size:12px;color:var(--mute)}
+section{padding-top:56px}
+h2{font-size:30px;color:var(--ice);margin-bottom:6px}.sub{color:var(--mute);font-size:13px;margin:0 0 20px}
+.search{width:100%;padding:12px 14px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;color:var(--text);font:inherit;margin:8px 0 6px}
+.search:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{text-align:left;font:inherit;color:inherit;cursor:pointer;padding:16px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(160deg,var(--panel),var(--bg2));transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:var(--cyan);box-shadow:0 0 24px rgba(30,107,255,.35)}
+.card h3{font-size:18px;color:var(--ice);margin-bottom:6px}.card p{margin:0;font-size:13px;color:var(--mute)}
+.tag{float:right;font-size:11px;color:var(--cyan);border:1px solid var(--line);border-radius:20px;padding:0 8px}
+.tl{border-left:2px solid var(--line);margin-left:6px}
+.ev{position:relative;padding:0 0 22px 22px;cursor:pointer}
+.ev::before{content:"";position:absolute;left:-7px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--blue)}
+.ev.next::before{background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.ev time{font-size:12px;color:var(--cyan)}.ev h3{font-size:17px;color:var(--ice)}.ev p{margin:2px 0 0;font-size:13px;color:var(--mute)}
+.bar{display:flex;height:34px;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin:10px 0}
+.bar div{display:flex;align-items:center;justify-content:center;font-size:12px;color:#001}
+pre{background:#030b1c;border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;font-size:13px;color:var(--ice);position:relative}
+.copy{position:absolute;right:8px;top:8px;background:var(--blue);color:#fff;border:0;border-radius:4px;padding:4px 10px;font:12px inherit;cursor:pointer}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.links a{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--bg2);text-decoration:none;color:var(--text);font-size:13px}.links a:hover{border-color:var(--cyan)}.links small{display:block;color:var(--mute)}
+.warn{border:1px solid #b8860b;background:rgba(184,134,11,.1);border-radius:8px;padding:14px;font-size:13px}
+footer{border-top:1px solid var(--line);padding:26px 5vw;color:var(--mute);font-size:12px;text-align:center}
+#modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(1,4,12,.78);backdrop-filter:blur(4px)}
+#modal.on{display:flex}
+.box{max-width:520px;width:100%;max-height:85vh;overflow:auto;border:1px solid var(--cyan);border-radius:10px;background:linear-gradient(160deg,#0a2250,var(--bg));padding:24px;box-shadow:0 0 60px rgba(30,107,255,.5);animation:in .18s}
+@keyframes in{from{transform:scale(.95);opacity:0}}
+.box h3{font-size:22px;color:var(--ice)}.box p{color:var(--text);font-size:14px}.box button{background:var(--blue);color:#fff;border:0;border-radius:6px;padding:8px 16px;font:inherit;cursor:pointer}
+#toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:grid;gap:8px;max-width:320px}
+.toast{background:var(--panel);border:1px solid var(--cyan);border-radius:8px;padding:10px 14px;font-size:13px;box-shadow:0 0 20px rgba(94,225,255,.3);animation:in .2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header>
+<b><span class="dot"></span>ELYSIUM PARSER</b>
+<a href="#overview">Overview</a><a href="#tech">Tech</a><a href="#timeline">Timeline</a><a href="#eco">Ecosystem</a><a href="#econ">Fees</a><a href="#dev">Developers</a><a href="#docs">Docs &amp; articles</a>
+</header>
+<main>
+<div class="hero">
+<h1>Elysium,<br>parsed.</h1>
+<p>Everything public about Kinetiq’s Hyperliquid-aligned L2 in one place: specs, dates, ecosystem, developer setup and source links. Tap any card for details.</p>
+<div class="cd" aria-label="Countdown to mainnet, November 9 2026"><div><strong id="d">--</strong><span>days</span></div><div><strong id="h">--</strong><span>hours</span></div><div><strong id="m">--</strong><span>min</span></div><div><strong id="s">--</strong><span>sec</span></div></div>
+<div class="stats">
+<div class="stat"><strong>300 Mgas/s</strong><span>target throughput</span></div>
+<div class="stat"><strong>100–200 ms</strong><span>block time</span></div>
+<div class="stat"><strong>HYPE</strong><span>native gas</span></div>
+<div class="stat"><strong>99801</strong><span>testnet chain ID</span></div>
+</div>
+</div>
+
+<section id="overview">
+<h2>Overview</h2><p class="sub">Search the facts below.</p>
+<input class="search" id="q" placeholder="Filter: sequencer, HyperCore, bridge, fees…" aria-label="Filter cards">
+<div class="grid" id="facts"></div>
+</section>
+
+<section id="tech"><h2>Tech stack</h2><p class="sub">Architecture as described in public docs and partner write-ups.</p><div class="grid" id="techg"></div></section>
+
+<section id="timeline"><h2>Timeline</h2><p class="sub">Tap an event for more.</p><div class="tl" id="tl"></div></section>
+
+<section id="eco"><h2>Ecosystem</h2><p class="sub">Apps named in coverage of the mainnet announcement. Lineups can change.</p><div class="grid" id="ecog"></div></section>
+
+<section id="econ"><h2>Sequencer fee split</h2><p class="sub">Per iq.wiki, citing Elysium project materials.</p>
+<div class="bar"><div style="width:25%;background:#5ee1ff">25% builders</div><div style="width:50%;background:#1e6bff;color:#fff">50% KNTQ buybacks</div><div style="width:25%;background:#7f9ac4">25% protocol</div></div>
+<p class="sub">Earlier coverage described the last 25% as going to Kinetiq’s treasury.</p></section>
+
+<section id="dev"><h2>Developer quickstart</h2><p class="sub">Testnet config for viem, as shown in Dwellir’s guide. Mainnet chain ID was not published in the sources used here.</p>
+<pre id="code"><button class="copy" id="cp">Copy</button><code>import { defineChain } from 'viem'
+
+export const elysiumTestnet = defineChain({
+  id: 99801,
+  name: 'Elysium Testnet',
+  nativeCurrency: { name: 'HYPE', symbol: 'HYPE', decimals: 18 },
+  rpcUrls: { default: { http: ['https://testnet-rpc.elysium.kinetiq.xyz'] } },
+  blockExplorers: { default: { name: 'Elysium Explorer',
+    url: 'https://elysium.kinetiq.xyz/testnet-explorer' } },
+})</code></pre></section>
+
+<section id="docs"><h2>Docs &amp; articles</h2><p class="sub">Primary and secondary sources.</p>
+<div class="links">
+<a href="https://elysium.kinetiq.xyz/docs" target="_blank" rel="noopener">Official docs<small>elysium.kinetiq.xyz/docs</small></a>
+<a href="https://elysium.kinetiq.xyz/ecosystem" target="_blank" rel="noopener">Ecosystem page<small>apps and RPC providers</small></a>
+<a href="https://elysium.kinetiq.xyz/testnet-faucet" target="_blank" rel="noopener">Testnet faucet<small>request test HYPE</small></a>
+<a href="https://elysium.kinetiq.xyz/testnet-bridge" target="_blank" rel="noopener">Testnet bridge<small>HyperEVM ↔ Elysium</small></a>
+<a href="https://elysium.kinetiq.xyz/testnet-explorer" target="_blank" rel="noopener">Testnet explorer<small>transactions, tokens, contracts</small></a>
+<a href="https://www.bankless.com/read/news/kinetiqs-elysium-l2-sets-nov-9-mainnet-launch" target="_blank" rel="noopener">Bankless: Nov. 9 mainnet launch<small>Oct 19, 2026</small></a>
+<a href="https://chainstack.com/what-is-elysium/" target="_blank" rel="noopener">Chainstack: What is Elysium?<small>AnyTrust, HyperCore access, RPC</small></a>
+<a href="https://www.dwellir.com/blog/what-is-elysium" target="_blank" rel="noopener">Dwellir: What is Elysium?<small>developer guide</small></a>
+<a href="https://iq.wiki/wiki/elysium" target="_blank" rel="noopener">IQ.wiki: Elysium<small>overview and fee split</small></a>
+<a href="https://forklog.com/en/?p=102588" target="_blank" rel="noopener">ForkLog: announcement<small>Aug 24, 2026</small></a>
+<a href="https://x.com/Enter_Elysium" target="_blank" rel="noopener">@Enter_Elysium<small>official X account</small></a>
+</div>
+<p class="warn" style="margin-top:22px">Not the older Elysium from Vulcan Forged (chain IDs 1338/1339, PYR). This page covers Kinetiq’s Elysium. Docs say specs and timelines may still change before mainnet. Not financial advice.</p>
+</section>
+</main>
+<footer>Elysium Parser is an unofficial, community-made info page. Data is a curated snapshot as of Nov 3, 2026.</footer>
+
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="box"><h3 id="mt"></h3><p id="mb"></p><button id="mc">Close</button></div></div>
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+var FACTS=[
+["What it is","Overview","Kinetiq’s Layer 2 for the Hyperliquid ecosystem. It settles to HyperEVM and uses HYPE as gas. Aimed at DeFi apps that need more execution capacity than HyperEVM offers."],
+["Throughput target","Specs","Docs target 300 million gas per second, 30 million gas per block and blocks around 100 ms. Partners call these design targets, not measured results."],
+["HyperEVM limits it solves","Why","Kinetiq cited low throughput, fee spikes in busy periods and the two-block design (fast 1 s / 3M gas, slow 1 min / 30M gas) as reasons to build Elysium."],
+["Sequencer at launch","Security","One sequencer orders transactions at launch, with neutral priority-fee ordering and no privileged lanes."],
+["Data availability","Security","A data availability committee posts compact certificates to HyperEVM (AnyTrust model). Chainstack saw a 1-of-1 committee on testnet; mainnet membership was not named."],
+["State validation","Security","Launch uses a whitelisted validator set. Permissionless fraud proofs via Arbitrum’s BoLD are promised later."],
+["HyperCore hooks","Roadmap","Contracts reading live HyperCore market data and routing orders to it will not be ready on day one. Docs place it in an ArbOS upgrade about four weeks after mainnet."],
+["Token graduation path","Roadmap","A token can launch on an Elysium AMM, build liquidity, graduate to a HyperCore spot order book and may get a perp via HIP-3."],
+["Bridging","Roadmap","Permissionless bridging and Hyperliquid spot listings are listed for the same post-launch upgrade."],
+["Trust model for reads","Security","Docs state HyperCore data is attested by the sequencer, not proven by HyperCore, which does not publish state roots today."]];
+var TECH=[
+["Arbitrum Orbit / Nitro","Standard Arbitrum Nitro chain, operated with Conduit per the docs."],
+["Settlement: HyperEVM","Parent chain. Testnet settles to HyperEVM testnet (chain ID 998)."],
+["AnyTrust DA","Committee-based data availability instead of full on-chain data."],
+["EVM compatible","viem, ethers.js and web3.js work. Not yet in viem’s bundled chains, so use defineChain."],
+["HYPE gas","Same native token as Hyperliquid. Testnet faucet and bridge are on elysium.kinetiq.xyz."],
+["Precompiles","HyperCore precompiles are not supported yet (Alchemy FAQ)."]];
+var TL=[
+["Aug 24, 2026","Kinetiq unveils Elysium","Announced as an L2 for Hyperliquid. Specs and partners were promised later."],
+["Sep 22, 2026","Public testnet","Chainstack lists the testnet live since Sep 22, chain ID 99801. IQ.wiki gives Oct 16, so sources disagree."],
+["Oct 19, 2026","Mainnet date announced","Bankless reports the Nov 9 date from a team teaser."],
+["Nov 9, 2026","Mainnet launch","Planned. Nest DEX is listed as live from the first block. Pump.fun and fomo plan trading support from launch.","next"],
+["~Dec 7, 2026","ArbOS upgrade (planned)","About four weeks after mainnet: HyperCore hooks, permissionless bridging, spot listings. Timing may shift."]];
+var ECO=[
+["Nest","DEX","Listed as live from the first mainnet block."],
+["Dawn","DEX","Committed to mainnet."],
+["Speculate","Prediction markets","Committed to mainnet."],
+["Montra","Launchpad","Committed to mainnet."],
+["Citadel","Launchpad","Committed to mainnet."],
+["Derive V3","Options","Elysium announced support for options trading."],
+["Pump.fun / fomo","Trading apps","Plan to enable trading on Elysium from Nov 9."],
+["Uniswap, 0x, KyberSwap","Integrations","Reported as preparing integrations."]];
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+function toast(t){var e=document.createElement("div");e.className="toast";e.textContent=t;$("toasts").appendChild(e);setTimeout(function(){e.remove()},3200)}
+function open_(t,b){$("mt").textContent=t;$("mb").textContent=b;$("modal").classList.add("on");$("mc").focus()}
+function close_(){$("modal").classList.remove("on")}
+$("mc").onclick=close_;$("modal").onclick=function(e){if(e.target===this)close_()};document.onkeydown=function(e){if(e.key==="Escape")close_()};
+function cards(id,arr,tagIdx){var g=$(id);g.innerHTML="";arr.forEach(function(a){var b=document.createElement("button");b.className="card";b.dataset.k=(a[0]+a[1]+a[2]).toLowerCase();
+var tag=tagIdx!=null?'<span class="tag">'+esc(a[tagIdx])+'</span>':"";b.innerHTML=tag+"<h3>"+esc(a[0])+"</h3><p>"+esc(a[tagIdx!=null?2:1])+"</p>";
+b.onclick=function(){open_(a[0],a[tagIdx!=null?2:1])};g.appendChild(b)})}
+cards("facts",FACTS,1);cards("techg",TECH);cards("ecog",ECO,1);
+$("tl").innerHTML="";TL.forEach(function(e){var d=document.createElement("div");d.className="ev"+(e[3]?" next":"");d.innerHTML="<time>"+esc(e[0])+"</time><h3>"+esc(e[1])+"</h3><p>"+esc(e[2])+"</p>";d.onclick=function(){open_(e[1],e[0]+". "+e[2])};$("tl").appendChild(d)});
+$("q").oninput=function(){var v=this.value.toLowerCase();document.querySelectorAll("#facts .card").forEach(function(c){c.style.display=c.dataset.k.indexOf(v)>-1?"":"none"})};
+$("cp").onclick=function(){var t=document.querySelector("#code code").textContent;try{navigator.clipboard.writeText(t).then(function(){toast("Config copied")},function(){toast("Copy blocked. Select the code manually.")})}catch(e){toast("Copy blocked. Select the code manually.")}};
+var T=Date.UTC(2026,10,9,0,0,0);
+function tick(){var s=Math.max(0,Math.floor((T-Date.now())/1000));$("d").textContent=Math.floor(s/86400);$("h").textContent=String(Math.floor(s%86400/3600)).padStart(2,"0");$("m").textContent=String(Math.floor(s%3600/60)).padStart(2,"0");$("s").textContent=String(s%60).padStart(2,"0")}
+tick();setInterval(tick,1000);
+setTimeout(function(){toast("Mainnet planned for Nov 9, 2026")},1200);
+setTimeout(function(){toast("Docs warn specs may change before launch")},5200);
+</script>
+</body>
+</html>
